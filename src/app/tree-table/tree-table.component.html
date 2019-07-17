@@ -1,1 +1,18 @@
-<p>tree-table works!</p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th *ngFor="let item of data.volumeSplitsClientInformations">
+        {{ item.categoryName }}
+      </th>
+    </tr>
+  </thead>
+  <tr *ngFor="let row of flatData" [class.hidden]="!row.isVisible">
+    <td (click)="toggleChildren(row, true)">
+      {{ row.clientName }}
+    </td>
+    <td *ngFor="let category of row.volumeSplitsClientInformations">
+      {{ category.hasVolumeSplit ? 'X' : 'O' }}
+    </td>
+  </tr>
+</table>

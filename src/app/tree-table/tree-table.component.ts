@@ -2,11 +2,12 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Observable, isObservable } from 'rxjs';
 
 interface ITreeStructure {
+  id: number;
   name: string;
   open: boolean;
-  children: ITreeStructure[];
+  parentId: number;
+  table: any;
   originalNode: any;
-  table: {[header: string]: string};
 }
 
 @Component({
@@ -17,11 +18,8 @@ interface ITreeStructure {
 export class TreeTableComponent implements OnInit {
 
   @Input() data: any | Observable<any>;
-  @Input() childrenSelector: string;
-  @Input() nameSelector: string;
-  @Input() tableDataSelector: string;
-  @Input() tableHeadersDictionary: {[key: string]: string}[];
-  realData: any;
+  keys: string[] = [];
+  flatData: any;
   treeStructure: ITreeStructure[] = [];
   constructor() { }
 
@@ -29,46 +27,58 @@ export class TreeTableComponent implements OnInit {
     if (isObservable(this.data)) {
       this.data.subscribe({
         next: input => {
-          this.realData = input;
-          (this.parseData())([this.realData], null);
+          this.flatData = (this.converter())([input]);
           // console.log(this.realData);
         }
       });
     } else {
-      this.realData = this.data;
+      this.flatData = (this.converter())([this.data]);
+      this.flatData[0].isVisible = true;
+      console.log(this.flatData);
+    }
       // console.log(this.realData);
       // console.log(this.nameSelector);
-      (this.parseData())([this.realData], null);
-    }
   }
 
-  parseData() {
-    const tree: ITreeStructure[] = [];
-    const recursive = function(children: any, currentLevel: ITreeStructure[]) {
-      const isFirst = !currentLevel;
-      children.forEach(child => {
-        console.log(child);
-        console.log(this.nameSelector);
-        currentLevel.push ({
-          name: child[this.nameSelector],
-          open: false,
-          children: [],
-          table: child[this.tableDataSelector],
-          originalNode: child
-        });
-        if (isFirst) {
-          this.tree = currentLevel;
-        } else {
-
-        }
-        console.log(currentLevel);
-        if (child[this.childrenSelector]) {
-          recursive.bind(this)(child[this.childrenSelector]);
+  converter() {
+    const retVal = [];
+    let counter = 1;
+    function recursive(data: any) {
+      console.log(counter);
+      counter++;
+      data.forEach(piece => {
+        piece.isOpen = false;
+        piece.isVisible = false;
+        retVal.push(piece);
+        if (piece.childrens) {
+          recursive(piece.childrens);
         }
       });
-      this.treeStructure.push(currentLevel);
-    };
+      return retVal;
+    }
     return recursive.bind(this);
   }
+  toggleChildren(parent: any, first: boolean, second?: boolean) {
+    console.log('boop');
+    if (first) {
+      parent.isOpen = !parent.isOpen;
+    }
 
+    this.flatData.filter( item => item.parentClientId === parent.clientId ).forEach(itemFound => {
+
+      itemFound.isVisible = first || second ? parent.isOpen : !itemFound.isVisible;
+    });
+    if (parent.childrens) {
+      this.flatData.filter(item => item.parentClientId === parent.clientId).forEach(child => {
+        if (parent.isOpen || first) {
+          if (first) {
+            this.toggleChildren(child, false, true);
+          } else {
+            this.toggleChildren(child, false, false);
+          }
+          console.log(parent.clientId);
+        }
+      });
+    }
+  }
 }
