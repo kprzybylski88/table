@@ -28,13 +28,14 @@ export class TreeTableComponent implements OnInit {
       this.data.subscribe({
         next: input => {
           this.flatData = (this.converter())([input]);
+          this.flatData[0].isVisible = true;
           // console.log(this.realData);
         }
       });
     } else {
       this.flatData = (this.converter())([this.data]);
       this.flatData[0].isVisible = true;
-      console.log(this.flatData);
+      // console.log(this.flatData);
     }
       // console.log(this.realData);
       // console.log(this.nameSelector);
@@ -58,7 +59,7 @@ export class TreeTableComponent implements OnInit {
     }
     return recursive.bind(this);
   }
-  toggleChildren(parent: any, first: boolean, second?: boolean) {
+  toggleChildren(parent: any, first: boolean) {
     console.log('boop');
     if (first) {
       parent.isOpen = !parent.isOpen;
@@ -66,16 +67,12 @@ export class TreeTableComponent implements OnInit {
 
     this.flatData.filter( item => item.parentClientId === parent.clientId ).forEach(itemFound => {
 
-      itemFound.isVisible = first || second ? parent.isOpen : !itemFound.isVisible;
+      itemFound.isVisible = !itemFound.isVisible;
     });
     if (parent.childrens) {
       this.flatData.filter(item => item.parentClientId === parent.clientId).forEach(child => {
-        if (parent.isOpen || first) {
-          if (first) {
-            this.toggleChildren(child, false, true);
-          } else {
-            this.toggleChildren(child, false, false);
-          }
+        if (child.isOpen) {
+          this.toggleChildren(child, false);
           console.log(parent.clientId);
         }
       });
