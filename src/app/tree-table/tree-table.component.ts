@@ -35,6 +35,7 @@ export class TreeTableComponent implements OnInit {
     } else {
       this.flatData = (this.converter())([this.data]);
       this.flatData[0].isVisible = true;
+      this.flatData[0].padding = 0;
       // console.log(this.flatData);
     }
       // console.log(this.realData);
@@ -50,6 +51,7 @@ export class TreeTableComponent implements OnInit {
       data.forEach(piece => {
         piece.isOpen = false;
         piece.isVisible = false;
+        piece.padding = 0;
         retVal.push(piece);
         if (piece.childrens) {
           recursive(piece.childrens);
@@ -59,21 +61,21 @@ export class TreeTableComponent implements OnInit {
     }
     return recursive.bind(this);
   }
-  toggleChildren(parent: any, first: boolean) {
-    console.log('boop');
+  toggleChildren(parent: any, first: boolean, level: number) {
+    console.log(parent.padding, parent.clientName);
     if (first) {
       parent.isOpen = !parent.isOpen;
     }
 
     this.flatData.filter( item => item.parentClientId === parent.clientId ).forEach(itemFound => {
-
+      itemFound.padding =  +level + 1;
+      console.log(itemFound.padding);
       itemFound.isVisible = !itemFound.isVisible;
     });
     if (parent.childrens) {
       this.flatData.filter(item => item.parentClientId === parent.clientId).forEach(child => {
         if (child.isOpen) {
-          this.toggleChildren(child, false);
-          console.log(parent.clientId);
+          this.toggleChildren(child, false, +level + 1);
         }
       });
     }
